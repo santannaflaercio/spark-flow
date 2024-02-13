@@ -1,6 +1,6 @@
 import re
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import udf, col, avg, format_number, split, upper, concat_ws
+from pyspark.sql.functions import udf, col, avg, format_number, split, upper, regexp_replace
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType, Row
 
 # Inicie uma sessão Spark com acesso ao S3
@@ -70,9 +70,8 @@ movies_ratings_df = movies_ratings_df.withColumn("genres", split(col("genres"), 
 # Ordena o DataFrame 'movies_df' pela coluna 'movieId' em ordem crescente
 movies_ratings_df = movies_ratings_df.orderBy("average_rating", ascending=False)
 
-movies_ratings_df = movies_ratings_df.withColumn("genres", concat_ws("|", col("genres")))
-
-movies_ratings_df.write.csv("output_final.csv", mode="overwrite", header=True)
+# Removendo as aspas duplas dos valores da coluna 'title'
+movies_ratings_df = movies_ratings_df.withColumn("title", regexp_replace(col("title"), '^"|"$', ''))
 
 # Mostrar o DataFrame resultante
 movies_ratings_df.show()
